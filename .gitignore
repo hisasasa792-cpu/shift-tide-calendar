@@ -1,0 +1,6 @@
+.superpowers/
+__pycache__/
+CLAUDE.md
+docs/
+output/
+tmp/
