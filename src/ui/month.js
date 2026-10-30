@@ -4,6 +4,7 @@ import { tideName } from "../tide-name.js";
 import { store } from "../store.js";
 import { CREW, KAIKYO_URL } from "../config.js";
 import { exportBackup } from "./backup.js";
+import { marksHtml } from "./marks.js";
 
 const WD = ["日", "月", "火", "水", "木", "金", "土"];
 const cls = (w) => (w === 0 ? "sun" : w === 6 ? "sat" : "");
@@ -12,7 +13,7 @@ function cell(date, today) {
   if (!date) return `<div class="cell empty"></div>`;
   const s = shiftFor(date);
   return `<div class="cell ${cls(weekday(date))}${date === today ? " today" : ""}" data-date="${date}">
-    <div class="top"><span class="d">${Number(date.slice(8))}</span><span class="marks">${store().marksFor(date)}</span></div>
+    <div class="top"><span class="d">${Number(date.slice(8))}</span><span class="marks">${marksHtml(store().marksFor(date))}</span></div>
     <span class="chip s-${s}">${s}</span>
     <div class="tide">${tideName(date)}</div>
   </div>`;

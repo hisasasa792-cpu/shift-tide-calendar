@@ -1,6 +1,7 @@
 import { renderMonth } from "./ui/month.js";
 import { renderDay } from "./ui/day.js";
-import { toISO } from "./date.js";
+import { toISO, addDays } from "./date.js";
+import { onSwipe } from "./ui/swipe.js";
 
 const el = document.getElementById("app");
 
@@ -16,21 +17,29 @@ function parseHash() {
 
 const monthHash = (y, m) => `#/${y}-${String(m).padStart(2, "0")}`;
 
+// Swipe left = next month (or day), swipe right = previous.
+// Day-to-day swipes replace the history entry, so the back button still returns to the month.
+let swipeMove = () => {};
+onSwipe(el, (dir) => swipeMove(dir));
+
 function render() {
   const { year, month, date } = parseHash();
   if (date) {
     renderDay(el, date, {
       onBack: () => (history.length > 1 ? history.back() : (location.hash = monthHash(year, month))),
     });
+    swipeMove = (dir) => location.replace(`#/${addDays(date, dir)}`);
     window.scrollTo(0, 0);
     return;
   }
+  const onMove = (d) => {
+    const n = new Date(year, month - 1 + d, 1);
+    location.hash = monthHash(n.getFullYear(), n.getMonth() + 1);
+  };
+  swipeMove = onMove;
   renderMonth(el, year, month, {
     onSelect: (date) => { location.hash = `#/${date}`; },
-    onMove: (d) => {
-      const n = new Date(year, month - 1 + d, 1);
-      location.hash = monthHash(n.getFullYear(), n.getMonth() + 1);
-    },
+    onMove,
   });
   window.scrollTo(0, 0);
 }

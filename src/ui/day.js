@@ -7,6 +7,7 @@ import { store } from "../store.js";
 import { PORTS } from "../config.js";
 import { openEventForm } from "./event-form.js";
 import { esc } from "./esc.js";
+import { marksHtml } from "./marks.js";
 
 const WD = ["日", "月", "火", "水", "木", "金", "土"];
 const PORT_KEY = "ui.port";
@@ -63,8 +64,8 @@ export function wxTable(hours) {
     <td class="${lv("precip", h.precip)}">${num(h.precip, 1)}</td>
     <td class="${lv("wave", h.wave)}">${num(h.wave, 1)}</td>
   </tr>`).join("");
-  return `<table class="wx"><thead><tr><th>時刻</th><th>風向・風速 m/s</th><th>最大</th><th>天気</th><th>雨mm</th><th>波m</th></tr></thead>
-    <tbody>${rows}</tbody></table>`;
+  return `<div class="hscroll"><table class="wx"><thead><tr><th>時刻</th><th>風向・風速 m/s</th><th>最大</th><th>天気</th><th>雨mm</th><th>波m</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
 }
 
 async function fillWeather(sec, date, port, force = false) {
@@ -90,7 +91,7 @@ function fillEvents(sec, date, rerender) {
   const label = (e) => (e.kind === "残" ? "残業" : e.kind === "早" ? "早出" : e.title || "会議");
   sec.innerHTML = `<h3>予定</h3>
     ${list.length ? `<ul class="events">${list.map((e) => `<li data-id="${esc(e.id)}">
-      <span class="k">${e.kind === "他" ? "●" : e.kind}</span><span class="t">${esc(e.time)}</span><span>${esc(label(e))}</span></li>`).join("")}</ul>`
+      <span class="k">${e.kind === "他" ? "●" : marksHtml(e.kind)}</span><span class="t">${esc(e.time)}</span><span>${esc(label(e))}</span></li>`).join("")}</ul>`
       : `<p class="msg">予定なし</p>`}
     <button class="add primary">＋ 予定を追加</button>`;
   const done = () => rerender();
@@ -109,13 +110,13 @@ export function renderDay(el, date, { onBack }) {
     <div class="bar"><button class="nav" data-act="back" aria-label="月に戻る">‹</button><span></span></div>
     <div class="day">
       <h2>${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）<span class="chip s-${s}">${s}</span>
-        <span class="marks">${store().marksFor(date)}</span></h2>
+        <span class="marks">${marksHtml(store().marksFor(date))}</span></h2>
       <div class="meta">勤務 ${SHIFT_HOURS[s]} ・ ${tideName(date)}</div>
+      <section data-sec="events"></section>
       <div class="tabs" role="tablist">${PORTS.map((p) =>
         `<button role="tab" data-port="${p.id}" aria-selected="${p.id === port.id}">${p.name}</button>`).join("")}</div>
       <section data-sec="tide"></section>
       <section data-sec="wx"></section>
-      <section data-sec="events"></section>
     </div>`;
 
   el.querySelector('[data-act="back"]').onclick = onBack;
