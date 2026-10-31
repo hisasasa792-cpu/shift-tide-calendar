@@ -3,7 +3,7 @@
 // Forecasts (Open-Meteo) are not cached here: weather.js keeps its own copy in localStorage.
 importScripts("src/net-first-sw.js");
 
-const VERSION = "v9";
+const VERSION = "v10";
 const SHELL = [
   "src/net-first-sw.js", "src/ui/backup.js",
   "./", "index.html", "styles.css", "manifest.webmanifest",
