@@ -33,7 +33,7 @@ a { color: var(--accent); }
 .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding: 0 4px; }
 .wd { text-align: center; font-size: 12px; color: var(--sub); padding: 4px 0; }
 .wd.sun { color: var(--sun); } .wd.sat { color: var(--sat); }
-.cell { background: var(--card); border-radius: 6px; min-height: 72px; padding: 3px; display: flex;
+.cell { background: var(--card); border-radius: 6px; min-height: 96px; padding: 3px; display: flex;
   flex-direction: column; justify-content: space-between; border: 2px solid transparent; cursor: pointer; }
 .cell.empty { background: transparent; cursor: default; }
 .cell.today { border-color: var(--accent); }
@@ -42,6 +42,7 @@ a { color: var(--accent); }
 .cell.sun .d { color: var(--sun); } .cell.sat .d { color: var(--sat); }
 .cell .marks { font-size: 11px; color: var(--accent); font-weight: 600; letter-spacing: -1px; }
 .cell .tide { font-size: 11px; color: var(--sub); text-align: center; }
+.cell .emo { font-size: 16px; line-height: 1.2; min-height: 20px; text-align: center; letter-spacing: -1px; white-space: nowrap; overflow: hidden; }
 
 .chip { display: inline-block; text-align: center; font-weight: 700; border-radius: 4px; }
 .cell .chip { font-size: 16px; line-height: 1.5; width: 100%; }
@@ -101,3 +102,16 @@ a { color: var(--accent); }
 .chip.nenkyu { color: var(--red); }
 .cell .chip.nenkyu { font-size: 13px; line-height: 24px; }
 .leave { width: 100%; margin-top: 8px; }
+.bar h1 { font-size: 18px; margin: 0; font-weight: 600; }
+.nav-space { width: 44px; }
+.count { font-size: 12px; color: var(--sub); font-weight: 400; margin-left: 6px; }
+.pal { display: flex; flex-wrap: wrap; gap: 8px; }
+.pal button { font-size: 26px; width: 52px; height: 52px; padding: 0; position: relative; }
+.pal button[aria-pressed="true"] { border: 2px solid var(--accent); background: rgba(30, 111, 217, .2); }
+.pal .del { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--red); color: #fff; font-size: 13px; line-height: 20px; }
+.addrow { display: flex; gap: 8px; margin-top: 10px; }
+.addrow input { flex: 1; min-width: 0; font: inherit; font-size: 22px; padding: 6px 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+.addrow button { white-space: nowrap; }
+.day .err { color: var(--red); font-size: 13px; min-height: 1em; margin: 4px 0 0; }

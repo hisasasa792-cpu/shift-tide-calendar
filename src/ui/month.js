@@ -5,6 +5,7 @@ import { store } from "../store.js";
 import { KAIKYO_URL } from "../config.js";
 import { CREWS } from "../prefs.js";
 import { shiftChip } from "./marks.js";
+import { esc } from "./esc.js";
 import { exportBackup } from "./backup.js";
 import { marksHtml } from "./marks.js";
 
@@ -21,10 +22,11 @@ function cell(date, today, crew) {
     <div class="top"><span class="d">${Number(date.slice(8))}</span><span class="marks">${marksHtml(store().marksFor(date))}</span></div>
     ${shiftChip(s, store().isLeave(date))}
     <div class="tide">${tideName(date)}</div>
+    <div class="emo">${esc(store().stampsFor(date).join(""))}</div>
   </div>`;
 }
 
-export function renderMonth(el, year, month1, { crew, years, onSelect, onMove, onJump, onCrew }) {
+export function renderMonth(el, year, month1, { crew, years, onSelect, onMove, onJump, onCrew, onEmoji }) {
   const today = toISO(new Date());
   const first = year === years[0] && month1 === 1;
   const last = year === years[years.length - 1] && month1 === 12;
@@ -46,6 +48,7 @@ export function renderMonth(el, year, month1, { crew, years, onSelect, onMove, o
         <button data-act="export">バックアップを書き出す</button>
         <button data-act="import">バックアップを読み込む</button>
       </div>
+      <button data-act="emoji">絵文字を登録</button>
       <input type="file" accept="application/json,.json" hidden>
     </div>`;
 
@@ -55,6 +58,7 @@ export function renderMonth(el, year, month1, { crew, years, onSelect, onMove, o
   pick("crew").onchange = () => onCrew(pick("crew").value);
   el.querySelectorAll(".cell[data-date]").forEach((c) => (c.onclick = () => onSelect(c.dataset.date)));
 
+  el.querySelector('[data-act="emoji"]').onclick = onEmoji;
   el.querySelector('[data-act="export"]').onclick = () =>
     exportBackup(store().exportJSON(), `schedule-backup-${today}.json`);
 
@@ -66,6 +70,6 @@ export function renderMonth(el, year, month1, { crew, years, onSelect, onMove, o
     if (!confirm("今の予定をすべて、バックアップの内容に置き換えます。よろしいですか？")) return;
     const r = store().importJSON(await f.text());
     alert(r.ok ? `${r.count}件の予定を読み込みました` : r.reason);
-    if (r.ok) renderMonth(el, year, month1, { crew, years, onSelect, onMove, onJump, onCrew });
+    if (r.ok) renderMonth(el, year, month1, { crew, years, onSelect, onMove, onJump, onCrew, onEmoji });
   };
 }

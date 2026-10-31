@@ -86,6 +86,19 @@ async function fillWeather(sec, date, port, force = false) {
   if (btn) btn.onclick = () => fillWeather(sec, date, port, true);
 }
 
+// Registered emoji plus any already on this day (even if since removed from the palette).
+function fillStamps(sec, date) {
+  const on = store().stampsFor(date);
+  const list = [...store().palette(), ...on.filter((e) => !store().palette().includes(e))];
+  sec.innerHTML = `<h3>絵文字<span class="count">2つまで</span></h3>
+    ${list.length ? `<div class="pal">${list.map((e, i) =>
+      `<button data-i="${i}" aria-pressed="${on.includes(e)}">${esc(e)}</button>`).join("")}</div>`
+      : `<p class="msg">月の画面の「絵文字を登録」から登録できます</p>`}`;
+  sec.querySelectorAll("[data-i]").forEach((b) => (b.onclick = () => {
+    if (store().toggleStamp(date, list[Number(b.dataset.i)])) fillStamps(sec, date);
+  }));
+}
+
 function fillEvents(sec, date, rerender) {
   const list = store().listEvents(date);
   const label = (e) => (e.kind === "残" ? "残業" : e.kind === "早" ? "早出" : e.title || "会議");
@@ -115,6 +128,7 @@ export function renderDay(el, date, { crew, onBack }) {
         <span class="marks">${marksHtml(store().marksFor(date))}</span></h2>
       <div class="meta">勤務 ${duty} ・ ${tideName(date)}</div>
       ${s === "休" ? "" : `<button class="leave" data-act="leave">${leave ? "年休を取り消す" : "年休にする"}</button>`}
+      <section data-sec="stamps"></section>
       <section data-sec="events"></section>
       <div class="tabs" role="tablist">${PORTS.map((p) =>
         `<button role="tab" data-port="${p.id}" aria-selected="${p.id === port.id}">${p.name}</button>`).join("")}</div>
@@ -132,5 +146,6 @@ export function renderDay(el, date, { crew, onBack }) {
   if (leaveBtn) leaveBtn.onclick = () => { store().setLeave(date, !leave); rerender(); };
   fillTide(el.querySelector('[data-sec="tide"]'), date, port);
   fillWeather(el.querySelector('[data-sec="wx"]'), date, port);
+  fillStamps(el.querySelector('[data-sec="stamps"]'), date);
   fillEvents(el.querySelector('[data-sec="events"]'), date, rerender);
 }

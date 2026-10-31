@@ -1,12 +1,13 @@
 import { renderMonth } from "./ui/month.js";
 import { renderDay } from "./ui/day.js";
+import { renderEmoji } from "./ui/emoji.js";
 import { toISO, addDays } from "./date.js";
 import { onSwipe } from "./ui/swipe.js";
 import { getCrew, setCrew, yearRange, clampMonth } from "./prefs.js";
 
 const el = document.getElementById("app");
 
-// Hash routes: #/2026-11 (month) or #/2026-11-18 (day), so the phone's back button works.
+// Hash routes: #/2026-11 (month), #/2026-11-18 (day) or #/emoji, so the phone's back button works.
 function parseHash() {
   const m = location.hash.match(/^#\/(\d{4})-(\d{2})(?:-(\d{2}))?$/);
   if (!m) {
@@ -23,13 +24,21 @@ const monthHash = (y, m) => `#/${y}-${String(m).padStart(2, "0")}`;
 let swipeMove = () => {};
 onSwipe(el, (dir) => swipeMove(dir));
 
+const back = (fallback) => (history.length > 1 ? history.back() : (location.hash = fallback));
+
 function render() {
+  if (location.hash === "#/emoji") {
+    renderEmoji(el, { onBack: () => back("") });
+    swipeMove = () => {};
+    window.scrollTo(0, 0);
+    return;
+  }
   const { year, month, date } = parseHash();
   const crew = getCrew(localStorage);
   if (date) {
     renderDay(el, date, {
       crew,
-      onBack: () => (history.length > 1 ? history.back() : (location.hash = monthHash(year, month))),
+      onBack: () => back(monthHash(year, month)),
     });
     swipeMove = (dir) => location.replace(`#/${addDays(date, dir)}`);
     window.scrollTo(0, 0);
@@ -56,6 +65,7 @@ function render() {
     onMove,
     onJump,
     onCrew: (c) => { setCrew(localStorage, c); render(); },
+    onEmoji: () => { location.hash = "#/emoji"; },
   });
   window.scrollTo(0, 0);
 }

@@ -110,3 +110,65 @@ test("import rejects malformed leave days", () => {
   const s = createStore(memStorage());
   eq(s.importJSON('{"version":1,"events":[],"leaves":["11/19"]}').ok, false);
 });
+
+test("palette starts with the default emoji and can be edited", () => {
+  const st = memStorage();
+  const s = createStore(st);
+  eq(s.palette(), ["🎣", "🎃", "⚽", "🎳", "⛳", "🎰", "🛒"]);
+  eq(s.addToPalette(" 🏊 "), true);
+  eq(s.addToPalette("🏊"), false, "no duplicates");
+  eq(s.addToPalette("  "), false, "no blanks");
+  s.removeFromPalette("🎃");
+  eq(createStore(st).palette(), ["🎣", "⚽", "🎳", "⛳", "🎰", "🛒", "🏊"]);
+});
+
+test("an emptied palette stays empty", () => {
+  const s = createStore(memStorage());
+  for (const e of s.palette()) s.removeFromPalette(e);
+  eq(s.palette(), []);
+});
+
+test("stamps toggle on a day, at most two", () => {
+  const s = createStore(memStorage());
+  eq(s.stampsFor("2026-11-19"), []);
+  eq(s.toggleStamp("2026-11-19", "🎣"), true);
+  eq(s.toggleStamp("2026-11-19", "⛳"), true);
+  eq(s.toggleStamp("2026-11-19", "🛒"), false, "third is refused");
+  eq(s.stampsFor("2026-11-19"), ["🎣", "⛳"]);
+  s.toggleStamp("2026-11-19", "🎣");
+  eq(s.stampsFor("2026-11-19"), ["⛳"]);
+});
+
+test("stamps stay after the emoji leaves the palette", () => {
+  const s = createStore(memStorage());
+  s.toggleStamp("2026-11-19", "🎣");
+  s.removeFromPalette("🎣");
+  eq(s.stampsFor("2026-11-19"), ["🎣"]);
+});
+
+test("export then import carries palette and stamps", () => {
+  const a = createStore(memStorage());
+  a.removeFromPalette("🎃");
+  a.toggleStamp("2026-11-19", "🎣");
+  a.setLeave("2026-11-20", true);
+  const b = createStore(memStorage());
+  eq(b.importJSON(a.exportJSON()).ok, true);
+  eq(b.palette(), a.palette());
+  eq(b.stampsFor("2026-11-19"), ["🎣"]);
+  eq(b.isLeave("2026-11-20"), true);
+});
+
+test("old backups without emoji keep the default palette", () => {
+  const s = createStore(memStorage());
+  s.toggleStamp("2026-11-19", "🎣");
+  eq(s.importJSON('{"version":1,"events":[]}').ok, true);
+  eq(s.stampsFor("2026-11-19"), []);
+  eq(s.palette().length, 7);
+});
+
+test("import rejects malformed stamps", () => {
+  const s = createStore(memStorage());
+  eq(s.importJSON('{"version":1,"events":[],"stamps":{"2026-11-19":["a","b","c"]}}').ok, false);
+  eq(s.importJSON('{"version":1,"events":[],"stamps":{"x":["a"]}}').ok, false);
+  eq(s.importJSON('{"version":1,"events":[],"palette":[1]}').ok, false);
+});
