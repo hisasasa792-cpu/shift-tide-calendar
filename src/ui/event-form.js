@@ -4,8 +4,9 @@ import { esc } from "./esc.js";
 const KINDS = [["残", "残"], ["早", "早"], ["会", "会"], ["他", "その他"]];
 
 // Add (event undefined) or edit an event. 残/早 have no time or title: tapping them saves at once.
-export function openEventForm(el, { date, event, onDone }) {
-  let kind = event?.kind ?? null;
+// kind preselects a type when adding (the 会 / その他 buttons at the top of the day screen).
+export function openEventForm(el, { date, event, kind: preset, onDone }) {
+  let kind = event?.kind ?? preset ?? null;
 
   function draw() {
     const timeless = kind === "残" || kind === "早";

@@ -115,3 +115,6 @@ a { color: var(--accent); }
   border: 1px solid var(--line); background: var(--bg); color: var(--text); }
 .addrow button { white-space: nowrap; }
 .day .err { color: var(--red); font-size: 13px; min-height: 1em; margin: 4px 0 0; }
+.quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.quick button { font-size: 17px; font-weight: 700; padding: 10px 0; }
+.quick button[aria-pressed="true"] { color: var(--yellow); border-color: var(--yellow); }

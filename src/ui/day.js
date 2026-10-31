@@ -118,6 +118,7 @@ function fillEvents(sec, date, rerender) {
 export function renderDay(el, date, { crew, onBack }) {
   const s = shiftFor(date, crew);
   const leave = s !== "休" && store().isLeave(date);
+  const kinds = new Set(store().listEvents(date).map((e) => e.kind));
   const duty = leave ? `年休（元は ${s} ${SHIFT_HOURS[s]}）` : SHIFT_HOURS[s];
   const d = fromISO(date);
   const port = selectedPort();
@@ -127,6 +128,8 @@ export function renderDay(el, date, { crew, onBack }) {
       <h2>${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）${shiftChip(s, leave)}
         <span class="marks">${marksHtml(store().marksFor(date))}</span></h2>
       <div class="meta">勤務 ${duty} ・ ${tideName(date)}</div>
+      <div class="quick">${[["残", "残"], ["早", "早"], ["会", "会"], ["他", "その他"]].map(([k, label]) =>
+        `<button data-quick="${k}"${k === "残" || k === "早" ? ` aria-pressed="${kinds.has(k)}"` : ""}>${label}</button>`).join("")}</div>
       ${s === "休" ? "" : `<button class="leave" data-act="leave">${leave ? "年休を取り消す" : "年休にする"}</button>`}
       <section data-sec="stamps"></section>
       <section data-sec="events"></section>
@@ -146,6 +149,20 @@ export function renderDay(el, date, { crew, onBack }) {
   if (leaveBtn) leaveBtn.onclick = () => { store().setLeave(date, !leave); rerender(); };
   fillTide(el.querySelector('[data-sec="tide"]'), date, port);
   fillWeather(el.querySelector('[data-sec="wx"]'), date, port);
+  // 残/早 toggle at once; 会/その他 open the form below with that type already chosen.
+  const events = el.querySelector('[data-sec="events"]');
+  el.querySelectorAll("[data-quick]").forEach((b) => (b.onclick = () => {
+    const k = b.dataset.quick;
+    if (k === "残" || k === "早") {
+      const found = store().listEvents(date).find((e) => e.kind === k);
+      if (found) store().deleteEvent(found.id);
+      else store().addEvent({ date, kind: k });
+      rerender();
+    } else {
+      openEventForm(events, { date, kind: k, onDone: rerender });
+      events.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }));
   fillStamps(el.querySelector('[data-sec="stamps"]'), date);
   fillEvents(el.querySelector('[data-sec="events"]'), date, rerender);
 }
