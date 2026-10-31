@@ -3,7 +3,7 @@
 // Forecasts (Open-Meteo) are not cached here: weather.js keeps its own copy in localStorage.
 importScripts("src/net-first-sw.js");
 
-const VERSION = "v7";
+const VERSION = "v8";
 const SHELL = [
   "src/net-first-sw.js", "src/ui/backup.js",
   "./", "index.html", "styles.css", "manifest.webmanifest",
@@ -15,7 +15,7 @@ const SHELL = [
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL.map((u) => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (e) => {
@@ -29,7 +29,10 @@ self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   e.respondWith(
     self.networkFirst(e.request, {
-      fetchFn: fetch,
+      // GitHub Pages says max-age=600; "no-cache" makes the browser ask the server each time
+      // (a cheap 304 when unchanged), so a new version shows up at once instead of 10 minutes later.
+      // (Page loads are fetched by URL: some browsers refuse options on a navigation request.)
+      fetchFn: (r) => fetch(r.mode === "navigate" ? r.url : r, { cache: "no-cache" }),
       match: (r) => caches.match(r, { ignoreSearch: true }),
       put: (r, res) => caches.open(VERSION).then((c) => c.put(r, res)),
       timeoutMs: 3000,
