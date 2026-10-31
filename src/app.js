@@ -2,6 +2,7 @@ import { renderMonth } from "./ui/month.js";
 import { renderDay } from "./ui/day.js";
 import { toISO, addDays } from "./date.js";
 import { onSwipe } from "./ui/swipe.js";
+import { getCrew, setCrew, yearRange, clampMonth } from "./prefs.js";
 
 const el = document.getElementById("app");
 
@@ -24,22 +25,37 @@ onSwipe(el, (dir) => swipeMove(dir));
 
 function render() {
   const { year, month, date } = parseHash();
+  const crew = getCrew(localStorage);
   if (date) {
     renderDay(el, date, {
+      crew,
       onBack: () => (history.length > 1 ? history.back() : (location.hash = monthHash(year, month))),
     });
     swipeMove = (dir) => location.replace(`#/${addDays(date, dir)}`);
     window.scrollTo(0, 0);
     return;
   }
+  const [y, m] = clampMonth(year, month);
+  if (y !== year || m !== month) {
+    location.replace(monthHash(y, m));
+    return;
+  }
+  const onJump = (ny, nm) => {
+    const [cy, cm] = clampMonth(ny, nm);
+    if (cy !== year || cm !== month) location.hash = monthHash(cy, cm);
+  };
   const onMove = (d) => {
     const n = new Date(year, month - 1 + d, 1);
-    location.hash = monthHash(n.getFullYear(), n.getMonth() + 1);
+    onJump(n.getFullYear(), n.getMonth() + 1);
   };
   swipeMove = onMove;
   renderMonth(el, year, month, {
+    crew,
+    years: yearRange(),
     onSelect: (date) => { location.hash = `#/${date}`; },
     onMove,
+    onJump,
+    onCrew: (c) => { setCrew(localStorage, c); render(); },
   });
   window.scrollTo(0, 0);
 }

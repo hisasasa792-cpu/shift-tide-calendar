@@ -1,4 +1,4 @@
-// Personal events, kept in localStorage. kind: 残 / 早 / 会 / 他.
+// Personal events and 年休 (annual leave) days, kept in localStorage. kind: 残 / 早 / 会 / 他.
 
 const KEY = "schedule.v1";
 const KINDS = ["残", "早", "会", "他"];
@@ -23,6 +23,8 @@ function normalize(e) {
   };
 }
 
+const isDate = (s) => typeof s === "string" && /^\d{4}-\d\d-\d\d$/.test(s);
+
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 
 function sortKey(e) {
@@ -31,17 +33,26 @@ function sortKey(e) {
 }
 
 export function createStore(storage) {
-  function load() {
+  function read() {
     try {
-      const v = JSON.parse(storage.getItem(KEY));
-      return Array.isArray(v?.events) ? v.events.filter((e) => valid(e) && e.id) : [];
+      return JSON.parse(storage.getItem(KEY)) ?? {};
     } catch {
-      return [];
+      return {};
     }
   }
 
-  function save(events) {
-    storage.setItem(KEY, JSON.stringify({ version: 1, events }));
+  function load() {
+    const v = read();
+    return Array.isArray(v.events) ? v.events.filter((e) => valid(e) && e.id) : [];
+  }
+
+  function loadLeaves() {
+    const v = read();
+    return Array.isArray(v.leaves) ? v.leaves.filter(isDate) : [];
+  }
+
+  function save(events, leaves = loadLeaves()) {
+    storage.setItem(KEY, JSON.stringify({ version: 1, events, leaves }));
   }
 
   function listEvents(date) {
@@ -73,8 +84,17 @@ export function createStore(storage) {
     return MARK_ORDER.filter((k) => kinds.has(k)).join("") + (kinds.has("他") ? "●" : "");
   }
 
+  function isLeave(date) {
+    return loadLeaves().includes(date);
+  }
+
+  function setLeave(date, on) {
+    const rest = loadLeaves().filter((d) => d !== date);
+    save(load(), on ? [...rest, date].sort() : rest);
+  }
+
   function exportJSON() {
-    return JSON.stringify({ version: 1, events: load() }, null, 1);
+    return JSON.stringify({ version: 1, events: load(), leaves: loadLeaves() }, null, 1);
   }
 
   function importJSON(text) {
@@ -87,11 +107,16 @@ export function createStore(storage) {
     if (!Array.isArray(data?.events) || !data.events.every((e) => valid(e) && e.id)) {
       return { ok: false, reason: "バックアップの形式が正しくありません" };
     }
-    save(data.events);
+    // Backups made before 年休 existed have no leaves list.
+    const leaves = data.leaves ?? [];
+    if (!Array.isArray(leaves) || !leaves.every(isDate)) {
+      return { ok: false, reason: "バックアップの形式が正しくありません" };
+    }
+    save(data.events, leaves);
     return { ok: true, count: data.events.length };
   }
 
-  return { listEvents, addEvent, updateEvent, deleteEvent, marksFor, exportJSON, importJSON };
+  return { listEvents, addEvent, updateEvent, deleteEvent, marksFor, isLeave, setLeave, exportJSON, importJSON };
 }
 
 let defaultStore;

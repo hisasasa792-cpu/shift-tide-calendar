@@ -69,3 +69,44 @@ test("corrupted storage starts empty without throwing", () => {
   const s = createStore(memStorage({ "schedule.v1": "not json" }));
   eq(s.listEvents(), []);
 });
+
+test("leave days can be set, cleared and persist", () => {
+  const st = memStorage();
+  const s = createStore(st);
+  eq(s.isLeave("2026-11-19"), false);
+  s.setLeave("2026-11-19", true);
+  eq(createStore(st).isLeave("2026-11-19"), true);
+  s.setLeave("2026-11-19", true);
+  eq(JSON.parse(st.getItem("schedule.v1")).leaves, ["2026-11-19"]);
+  s.setLeave("2026-11-19", false);
+  eq(s.isLeave("2026-11-19"), false);
+});
+
+test("leave days survive event changes", () => {
+  const s = createStore(memStorage());
+  s.setLeave("2026-11-19", true);
+  const e = s.addEvent({ date: "2026-11-19", kind: "残" });
+  s.deleteEvent(e.id);
+  eq(s.isLeave("2026-11-19"), true);
+});
+
+test("export then import carries leave days", () => {
+  const a = createStore(memStorage());
+  a.setLeave("2026-11-19", true);
+  a.addEvent({ date: "2026-11-18", kind: "残" });
+  const b = createStore(memStorage());
+  eq(b.importJSON(a.exportJSON()), { ok: true, count: 1 });
+  eq(b.isLeave("2026-11-19"), true);
+});
+
+test("old backups without leave days still import", () => {
+  const s = createStore(memStorage());
+  s.setLeave("2026-11-19", true);
+  eq(s.importJSON('{"version":1,"events":[]}'), { ok: true, count: 0 });
+  eq(s.isLeave("2026-11-19"), false);
+});
+
+test("import rejects malformed leave days", () => {
+  const s = createStore(memStorage());
+  eq(s.importJSON('{"version":1,"events":[],"leaves":["11/19"]}').ok, false);
+});

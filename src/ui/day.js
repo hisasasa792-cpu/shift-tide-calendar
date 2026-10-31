@@ -7,7 +7,7 @@ import { store } from "../store.js";
 import { PORTS } from "../config.js";
 import { openEventForm } from "./event-form.js";
 import { esc } from "./esc.js";
-import { marksHtml } from "./marks.js";
+import { marksHtml, shiftChip } from "./marks.js";
 
 const WD = ["日", "月", "火", "水", "木", "金", "土"];
 const PORT_KEY = "ui.port";
@@ -102,16 +102,19 @@ function fillEvents(sec, date, rerender) {
   sec.querySelector(".add").onclick = () => openEventForm(sec, { date, onDone: done });
 }
 
-export function renderDay(el, date, { onBack }) {
-  const s = shiftFor(date);
+export function renderDay(el, date, { crew, onBack }) {
+  const s = shiftFor(date, crew);
+  const leave = s !== "休" && store().isLeave(date);
+  const duty = leave ? `年休（元は ${s} ${SHIFT_HOURS[s]}）` : SHIFT_HOURS[s];
   const d = fromISO(date);
   const port = selectedPort();
   el.innerHTML = `
     <div class="bar"><button class="nav" data-act="back" aria-label="月に戻る">‹</button><span></span></div>
     <div class="day">
-      <h2>${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）<span class="chip s-${s}">${s}</span>
+      <h2>${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）${shiftChip(s, leave)}
         <span class="marks">${marksHtml(store().marksFor(date))}</span></h2>
-      <div class="meta">勤務 ${SHIFT_HOURS[s]} ・ ${tideName(date)}</div>
+      <div class="meta">勤務 ${duty} ・ ${tideName(date)}</div>
+      ${s === "休" ? "" : `<button class="leave" data-act="leave">${leave ? "年休を取り消す" : "年休にする"}</button>`}
       <section data-sec="events"></section>
       <div class="tabs" role="tablist">${PORTS.map((p) =>
         `<button role="tab" data-port="${p.id}" aria-selected="${p.id === port.id}">${p.name}</button>`).join("")}</div>
@@ -122,9 +125,11 @@ export function renderDay(el, date, { onBack }) {
   el.querySelector('[data-act="back"]').onclick = onBack;
   el.querySelectorAll("[data-port]").forEach((b) => (b.onclick = () => {
     try { localStorage.setItem(PORT_KEY, b.dataset.port); } catch { /* storage blocked */ }
-    renderDay(el, date, { onBack });
+    renderDay(el, date, { crew, onBack });
   }));
-  const rerender = () => renderDay(el, date, { onBack });
+  const rerender = () => renderDay(el, date, { crew, onBack });
+  const leaveBtn = el.querySelector('[data-act="leave"]');
+  if (leaveBtn) leaveBtn.onclick = () => { store().setLeave(date, !leave); rerender(); };
   fillTide(el.querySelector('[data-sec="tide"]'), date, port);
   fillWeather(el.querySelector('[data-sec="wx"]'), date, port);
   fillEvents(el.querySelector('[data-sec="events"]'), date, rerender);

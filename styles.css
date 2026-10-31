@@ -24,8 +24,10 @@ button.primary { background: var(--accent); color: #fff; border-color: var(--acc
 a { color: var(--accent); }
 
 .bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 8px; }
-.bar h1 { font-size: 18px; margin: 0; font-weight: 600; }
-.bar .crew { font-size: 13px; color: var(--sub); font-weight: 400; margin-left: 4px; }
+.pick { display: flex; gap: 6px; justify-content: center; }
+.pick select { font: inherit; font-size: 17px; font-weight: 600; color: var(--text); background: var(--card);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; }
+.nav:disabled { opacity: .3; cursor: default; }
 .nav { width: 44px; height: 40px; padding: 0; font-size: 20px; }
 
 .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding: 0 4px; }
@@ -96,3 +98,6 @@ a { color: var(--accent); }
 .form .err { color: var(--red); font-size: 13px; min-height: 1em; margin: 0; }
 .mk-y { color: var(--yellow); }
 .hscroll { overflow-x: auto; }
+.chip.nenkyu { color: var(--red); }
+.cell .chip.nenkyu { font-size: 13px; line-height: 24px; }
+.leave { width: 100%; margin-top: 8px; }

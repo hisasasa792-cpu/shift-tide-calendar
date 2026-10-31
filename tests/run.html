@@ -10,7 +10,7 @@
 <ul id="results"></ul>
 <script type="module">
 import { run } from "./harness.js";
-const files = ["./date.test.js", "./shift.test.js", "./tide-name.test.js", "./tide-data.test.js", "./weather.test.js", "./store.test.js", "./esc.test.js", "./fix.test.js", "./config.test.js", "./ui.test.js"];
+const files = ["./date.test.js", "./shift.test.js", "./tide-name.test.js", "./tide-data.test.js", "./weather.test.js", "./store.test.js", "./esc.test.js", "./fix.test.js", "./config.test.js", "./ui.test.js", "./prefs.test.js"];
 try {
   for (const f of files) await import(f);
 } catch (err) {
