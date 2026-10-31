@@ -1,6 +1,7 @@
 import { fromISO, toISO } from "../date.js";
 import { shiftFor, SHIFT_HOURS } from "../shift.js";
 import { tideName } from "../tide-name.js";
+import { holidayName } from "../holiday.js";
 import { tideFor } from "../tide-data.js";
 import { getForecast, hoursForDate, windDirName, weatherName, level } from "../weather.js";
 import { store } from "../store.js";
@@ -125,7 +126,7 @@ export function renderDay(el, date, { crew, onBack }) {
   el.innerHTML = `
     <div class="bar"><button class="nav" data-act="back" aria-label="月に戻る">‹</button><span></span></div>
     <div class="day">
-      <h2>${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）${shiftChip(s, leave)}
+      <h2>${d.getMonth() + 1}月${d.getDate()}日（${WD[d.getDay()]}）${holidayName(date) ? `<span class="hol">${holidayName(date)}</span>` : ""}${shiftChip(s, leave)}
         <span class="marks">${marksHtml(store().marksFor(date))}</span></h2>
       <div class="meta">勤務 ${duty} ・ ${tideName(date)}</div>
       <div class="quick">${[["残", "残"], ["早", "早"], ["会", "会"], ["他", "その他"]].map(([k, label]) =>

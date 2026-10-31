@@ -1,6 +1,7 @@
 import { monthGrid, toISO, weekday } from "../date.js";
 import { shiftFor } from "../shift.js";
 import { tideName } from "../tide-name.js";
+import { holidayName } from "../holiday.js";
 import { store } from "../store.js";
 import { KAIKYO_URL } from "../config.js";
 import { CREWS } from "../prefs.js";
@@ -18,7 +19,8 @@ const opts = (values, selected, label) =>
 function cell(date, today, crew) {
   if (!date) return `<div class="cell empty"></div>`;
   const s = shiftFor(date, crew);
-  return `<div class="cell ${cls(weekday(date))}${date === today ? " today" : ""}" data-date="${date}">
+  // Holidays get the Sunday red.
+  return `<div class="cell ${holidayName(date) ? "sun" : cls(weekday(date))}${date === today ? " today" : ""}" data-date="${date}">
     <div class="top"><span class="d">${Number(date.slice(8))}</span><span class="marks">${marksHtml(store().marksFor(date))}</span></div>
     ${shiftChip(s, store().isLeave(date))}
     <div class="tide">${tideName(date)}</div>

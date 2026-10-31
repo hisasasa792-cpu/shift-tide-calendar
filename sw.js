@@ -3,13 +3,13 @@
 // Forecasts (Open-Meteo) are not cached here: weather.js keeps its own copy in localStorage.
 importScripts("src/net-first-sw.js");
 
-const VERSION = "v8";
+const VERSION = "v9";
 const SHELL = [
   "src/net-first-sw.js", "src/ui/backup.js",
   "./", "index.html", "styles.css", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
   "src/app.js", "src/config.js", "src/date.js", "src/shift.js", "src/tide-name.js",
-  "src/tide-data.js", "src/weather.js", "src/store.js", "src/prefs.js",
+  "src/tide-data.js", "src/weather.js", "src/store.js", "src/prefs.js", "src/holiday.js",
   "src/ui/month.js", "src/ui/day.js", "src/ui/event-form.js", "src/ui/esc.js", "src/ui/marks.js", "src/ui/swipe.js", "src/ui/emoji.js",
   "data/tide/2026.json", "data/tide/2027.json",
 ];

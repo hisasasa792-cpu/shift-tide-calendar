@@ -118,3 +118,4 @@ a { color: var(--accent); }
 .quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
 .quick button { font-size: 17px; font-weight: 700; padding: 10px 0; }
 .quick button[aria-pressed="true"] { color: var(--yellow); border-color: var(--yellow); }
+.day h2 .hol { font-size: 13px; font-weight: 600; color: var(--sun); }
